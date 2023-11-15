@@ -10,11 +10,11 @@ DESIGNING THE DATABASE
 3 - We keep the data of customers and some customers are agents, so we make another table for agents which is the subset for customers table;
 4 - One train can tavel on many routes and one many route could be travelled by many trains. A train that travels on a particular route also travels on its reverse route, .i.e if a train travels on Mumbai-Goa route it will also travel on Goa-Mumbai route. 
 5 - A train that is scheduled to travel on a day will always travel both the original route and its opposite route, so at the end of the day it will come back to the station it started from.
-5 - There are a total of 12 trains made of 60 coahes together, and the remaining 40 coaches are assumed to kepts at different stations(atleat one coach on each station) to be deployed in case of delays. The engines that these coaches will require when they are deployed are assumed to be present at the stations.
-6 -  Coaches have a mileage attribute and a last maintence date attribute to track when the next maintence is scheduled.
-7 - A ticket is for a train and the process is standardised .i.e if the ticket has a seat number 35 we know that this is seat is in the second coach(since each coach has 30 seating capacity). This eliminates the need for a seperate seat entity.
-8 - Tickets table also has passenger_id which is the customer_id of the passenger, a booking_id the id of the customer who bookded a ticket(example a single man can book the ticket for his entire family) and an agent_id. If ticket is not booked by an agent agent_id is null.
-9 - Finally, some part of the sample data is assumed to be given to us by some other process and systems. For example the arrival time of a train on a praticular station is asuumed to be known, we are only concerned with the actual arrival and departure time.
+6 - There are a total of 12 trains made of 60 coahes together, and the remaining 40 coaches are assumed to kepts at different stations(atleat one coach on each station) to be deployed in case of delays. The engines that these coaches will require when they are deployed are assumed to be present at the stations.
+7 -  Coaches have a mileage attribute and a last maintence date attribute to track when the next maintence is scheduled.
+8 - A ticket is for a train and the process is standardised .i.e if the ticket has a seat number 35 we know that this is seat is in the second coach(since each coach has 30 seating capacity). This eliminates the need for a seperate seat entity.
+9 - Tickets table also has passenger_id which is the customer_id of the passenger, a booking_id the id of the customer who bookded a ticket(example a single man can book the ticket for his entire family) and an agent_id. If ticket is not booked by an agent agent_id is null.
+10 - Finally, some part of the sample data is assumed to be given to us by some other process and systems. For example the arrival time of a train on a praticular station is asuumed to be known, we are only concerned with the actual arrival and departure time.
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
