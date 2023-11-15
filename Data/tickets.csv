@@ -1,4 +1,4 @@
-ticket_no,train_no,start,end,date,departure_time,seat_no,passenger_id,booking_id,agent_id,status,route_id
+ticket_no,train_no,start,end,date,departure_time,seat_no,passenger_id,booking_id,agent_id,status,route_id,price
 1,101,CSMT,MAO,2023-09-01,08:00:00,15,C101,C101,NULL,confirmed,R010,400
 2,101,CSMT,MAO,2023-09-01,08:00:00,8,C102,C102,NULL,confirmed,R010,400
 3,101,CSMT,MAO,2023-09-01,08:00:00,NULL,C103,C103,NULL,waiting,R010,600
