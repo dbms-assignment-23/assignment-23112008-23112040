@@ -6,14 +6,14 @@ INTERCITY ASSIGNMENT
 DESIGNING THE DATABASE
 
 1 - Trains are assumed to be sequence of coaches attached to an engine(the database doesn't include engine information), one coach is assumed to be the part of the same train always.
-2 - Just like trains routes are assumed to to sequences of stations in a particular order(the ordering of the staiton matters). Example Goa-Mumbai is one route and Mumbai_Goa is a      different route with different route_id.
-3 - We keep the data of customers and some customers are agents, so we make another table for agents which is the subset for customers table;
-4 - One train can tavel on many routes and one many route could be travelled by many trains. A train that travels on a particular route also travels on its reverse route, .i.e if a train travels on Mumbai-Goa route it will also travel on Goa-Mumbai route. 
+2 - Just like trains routes are assumed to to sequences of stations in a particular order(the ordering of the staiton matters). Example Goa-Mumbai is one route and Mumbai_Goa is a different route with different route_id.
+3 - We keep the data of customers and some customers are agents, so we made another table for agents which is the subset for customers table;
+4 - One train can tavel on many routes and one route could be travelled by many trains. A train that travels on a particular route also travels on its reverse route, .i.e if a train travels on Mumbai-Goa route it will also travel on Goa-Mumbai route. 
 5 - A train that is scheduled to travel on a day will always travel both the original route and its opposite route, so at the end of the day it will come back to the station it started from.
 6 - There are a total of 12 trains made of 60 coahes together, and the remaining 40 coaches are assumed to kepts at different stations(atleat one coach on each station) to be deployed in case of delays. The engines that these coaches will require when they are deployed are assumed to be present at the stations.
 7 -  Coaches have a mileage attribute and a last maintence date attribute to track when the next maintence is scheduled.
 8 - A ticket is for a train and the process is standardised .i.e if the ticket has a seat number 35 we know that this is seat is in the second coach(since each coach has 30 seating capacity). This eliminates the need for a seperate seat entity.
-9 - Tickets table also has passenger_id which is the customer_id of the passenger, a booking_id the id of the customer who bookded a ticket(example a single man can book the ticket for his entire family) and an agent_id. If ticket is not booked by an agent agent_id is null.
+9 - Tickets table also has passenger_id which is the customer_id of the passenger. If ticket is not booked by an agent agent_id will be null.
 10 - Finally, some part of the sample data is assumed to be given to us by some other process and systems. For example the arrival time of a train on a praticular station is asuumed to be known, we are only concerned with the actual arrival and departure time.
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -40,15 +40,15 @@ DATABASE CREATE AND INSERT STATEMENTS.
 
 10 - create table travels_on(train_no int, route_id varchar(10), primary key(train_no, route_id), foreign key(train_no) references trains(train_no), foreign key(route_id) references routes(route_id));
 
-11 - create table customers(customer_id varchar(10), name varchar(100) not null, age int not null, gender varchar(10), phone varchar(13), total_travels int, primary key(customer_id));
+11 - create table customers(customer_id varchar(10), name varchar(100) not null, age int not null, gender varchar(10), phone varchar(13), primary key(customer_id));
 
-12 - creat table agents(agent_id varchar(10), primary key(agent_id), foreign key(agent_id) references customers(customer_id));
+12 - create table agents(agent_id varchar(10) primary key,name varchar(100),age int,gender varchar(10),phone bigint);
 
-13 - create table scheduled_for(train_no int, route_id varchar(10), date date, departure_time time, driver_id varchar(10), co_driver_id varchar(10), primary key(train_no, route_id, date, 14 - departure_time), foreign key(train_no, route_id) references travels_on(train_no, route_id), foreign key(driver_id) refernces drivers(driver_id), foreign key(co_driver_id) references drivers(driver_id));
+13 - create table scheduled_for(train_no int, route_id varchar(10), date date, departure_time time, driver_id varchar(10), co_driver_id varchar(10),arrival_time time, primary key(train_no, route_id, date, 14 - departure_time), foreign key(train_no, route_id) references travels_on(train_no, route_id), foreign key(driver_id) refernces drivers(driver_id), foreign key(co_driver_id) references drivers(driver_id));
 
 15 - create table arrives_on(train_no int, station_code varchar(10), date date, arrival_time time, departure_time time, actual_arrival_time time, actual_departure_time time, primary key(train_no, station_code, date, actual_departure_time), foreign key(train_no) references trains(train_no), foreign key(station_code) references stations(station_code));
 
-16 - create table tickets(ticket_no varchar(20) primary key,train_no int,start varchar(20),end varchar(20),date date,departure_time time,seat_no int,passenger_id varchar(10),booking_id varchar(10),agent_id varchar(10),status varchar(20),route_id varchar(10),price int,foreign key (train_no) references trains(train_no),foreign key (start) references stations(station_code),foreign key (end) references stations(station_code),foreign key (passenger_id) references customers(customer_id),foreign key (booking_id) references customers(customer_id),foreign key (agent_id) references customers(customer_id),foreign key (route_id) references routes(route_id));
+16 - create table tickets(ticket_no varchar(20) primary key,train_no int,start varchar(20),end varchar(20),date date,departure_time time,seat_no int,passenger_id varchar(10),agent_id varchar(10),status varchar(20),route_id varchar(10),price int,foreign key (train_no) references trains(train_no),foreign key (start) references stations(station_code),foreign key (end) references stations(station_code),foreign key (passenger_id) references customers(customer_id),foreign key (route_id) references routes(route_id));
 
 17 - load data local infile 'D:/Downloads/intercity_sample_data/trains.csv' into table trains fields terminated by ',' lines terminated by '\r\n' ignore 1 lines;
 
