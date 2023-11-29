@@ -179,44 +179,43 @@ SET C
 +----------+-----------------------------+
 
 2. List all fleets from Dharwad to Bengaluru, in ascending order of their monthly seats sold for the month of October this year.
--- select train_no,count(ticket_no) total_tickets from tickets t where t.train_no in (select train_no from travels_on tt join (select route_id from routes r where r.name='Dharwad-Bengaluru') r1 on tt.route_id = r1.route_id) and month(t.date) = 10 and t.status!='cancelled' group by train_no order by total_tickets asc;
+-- select train_no, count(ticket_no) total_tickets from tickets t where t.status!='Cancelled' and train_no in (select train_no from travels_on where route_id = (select route_id from routes where name = 'Bengaluru-Dharwad')) group by train_no order by total_tickets;
 +----------+---------------+
 | train_no | total_tickets |
 +----------+---------------+
 |      108 |             2 |
-|      112 |             3 |
+|      112 |             2 |
 +----------+---------------+
 
 3. List the details of most popular route of InterCity Express Trains.
---  select r.route_id,count(r.route_id) from routes r join tickets t where r.route_id=t.route_id group by r.route_id order by count(r.route_id) desc limit 1;
-+----------+-------------------+
-| route_id | count(r.route_id) |
-+----------+-------------------+
-| R010     |                20 |
-+----------+-------------------+
+--select ssq.route_id, ssq.total_travels, routes.name from (select route_id, count(route_id) total_travels from (select tickets.train_no, scheduled_for.route_id from tickets inner join scheduled_for on scheduled_for.train_no = tickets.train_no and tickets.departure_time >= scheduled_for.departure_time and tickets.date = scheduled_for.date and tickets.departure_time < scheduled_for.arrival_time) sq group by route_id order by total_travels desc limit 0,1) ssq inner join routes on routes.route_id = ssq.route_id;
++----------+---------------+------------+
+| route_id | total_travels | name       |
++----------+---------------+------------+
+| R010     |            16 | Mumbai-Goa |
++----------+---------------+------------+
 
 4. Display the details of the passengers who are frequent travellers with InterCity Express Trains. [Frequent traveller can be defined as the one who has travelled at least three times, irrespective of the route]
 -- select * from customers c where c.customer_id in (select passenger_id from tickets group by passenger_id having count(passenger_id) >= 3);
 +-------------+------------------+-----+--------+------------+
 | customer_id | name             | age | gender | phone      |
 +-------------+------------------+-----+--------+------------+
-| C101        | Sahil Sharma     |  20 | M      | 7890123456 |
-| C111        | Siddharth Tiwari |  29 | M      | 5432109876 |
-| C147        | Pramod Verma     |  36 | M      | 5432109876 |
+| C101        | Sahil Sharma     |  20 | Male   | 7890123456 |
+| C111        | Siddharth Tiwari |  29 | Male   | 5432109876 |
 +-------------+------------------+-----+--------+------------+
 
-5. Display the details of trains which arrived late at their destination, more than once in this year; Include the driver and co-driver information in the output. 
--- select sf.train_no,sf.route_id,sf.date,sf.driver_id,sf.co_driver_id from scheduled_for sf join (select * from arrives_on ao where year(ao.date) = '2023' and ao.actual_arrival_time > ao.arrival_time) r1 on r1.train_no=sf.train_no and r1.date=sf.date and sf.departure_time!=r1.departure_time;
-+----------+----------+------------+-----------+--------------+
-| train_no | route_id | date       | driver_id | co_driver_id |
-+----------+----------+------------+-----------+--------------+
-|      101 | R010     | 2023-09-01 | D001      | D002         |
-|      101 | R004     | 2023-09-02 | D001      | D002         |
-|      101 | R004     | 2023-09-09 | D101      | D102         |
-|      102 | R001     | 2023-09-08 | D112      | D113         |
-|      102 | R001     | 2023-09-12 | D112      | D113         |
-|      104 | R009     | 2023-10-10 | D003      | D015         |
-|      104 | R009     | 2023-10-17 | D003      | D015         |
-|      104 | R009     | 2023-10-24 | D003      | D015         |
-+----------+----------+------------+-----------+--------------+
+5.Display the details of trains which arrived late at their destination, more than once in this year; Include the driver and co-driver information in the output. 
+--select sq.train_no, sq.date, sf.driver_id, sf.co_driver_id from (select train_no, arrival_time, date from arrives_on where train_no in (select train_no from arrives_on where actual_arrival_time > arrival_time group by train_no having count(train_no) > 1)) sq inner join scheduled_for sf on sq.train_no=sf.train_no and sq.date = sf.date and sq.arrival_time >= sf.departure_time;
++----------+------------+-----------+--------------+
+| train_no | date       | driver_id | co_driver_id |
++----------+------------+-----------+--------------+
+|      101 | 2023-09-01 | d001      | d002         |
+|      101 | 2023-09-02 | d001      | d002         |
+|      101 | 2023-09-09 | d101      | d102         |
+|      102 | 2023-09-08 | d112      | d113         |
+|      102 | 2023-09-12 | d112      | d113         |
+|      104 | 2023-10-10 | d003      | d015         |
+|      104 | 2023-10-17 | d003      | d015         |
+|      104 | 2023-10-24 | d003      | d015         |
++----------+------------+-----------+--------------+
 
