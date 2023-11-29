@@ -83,7 +83,11 @@ SET B
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 1. Show schedule of all trips including main driver information for 10th October this year.
--- select d.*,r1.train_no,r1.route_id,r1.date,r1.departure_time,r1.co_driver_id from drivers d join (select * from scheduled_for where date='2023-10-10') r1 on r1.driver_id=d.driver_id;
+
+Query : 
+select * from drivers d natural join (select * from scheduled_for where date='2023-10-10') r1;
+
+Output : 
 +-----------+----------------+-----+------------+--------+------------+----------+----------+------------+----------------+--------------+
 | driver_id | name           | age | city       | gender | phone      | train_no | route_id | date       | departure_time | co_driver_id |
 +-----------+----------------+-----+------------+--------+------------+----------+----------+------------+----------------+--------------+
@@ -103,60 +107,85 @@ SET B
 | D028      | Sanjay Verma   |  30 | Jaipur     | M      | 4567890123 |      110 | R017     | 2023-10-10 | 17:00:00       | D027         |
 +-----------+----------------+-----+------------+--------+------------+----------+----------+------------+----------------+--------------+
 
+
 2. List all coaches with mileage between 4000 and 4999 km covered for September this year; include information on the coach, its last service date and total number of scheduled trips. 
--- select c.*,r1.total_trips from coaches c join (select c.coach_id,count(sf.train_no) as total_trips from coaches c join made_of mo join trains t join scheduled_for sf where c.coach_id=mo.coach_id and mo.train_no=t.train_no and t.train_no=sf.train_no group by coach_id) r1 on r1.coach_id=c.coach_id and c.mileage between 4000 and 4999;
-+----------+---------+-----------------------+--------------------+-------------+
-| coach_id | mileage | last_maintenance_date | total_maintenances | total_trips |
-+----------+---------+-----------------------+--------------------+-------------+
-| WX301    |    4800 | 2023-01-20            |                  3 |          60 |
-| WX303    |    4500 | 2023-05-15            |                  2 |          30 |
-| WX305    |    4900 | 2023-04-10            |                  1 |          30 |
-| WX306    |    4800 | NULL                  |                  0 |          14 |
-| WX310    |    4800 | 2023-03-05            |                  1 |          14 |
-| WX312    |    4700 | 2023-01-18            |                  3 |          30 |
-| WX314    |    4900 | 2023-05-10            |                  2 |          30 |
-| WX318    |    4800 | 2023-03-15            |                  2 |          34 |
-| WX322    |    4900 | 2023-01-30            |                  1 |          24 |
-| WX323    |    4800 | 2023-02-28            |                  2 |          24 |
-| WX328    |    4700 | 2023-04-15            |                  1 |          14 |
-| WX329    |    4800 | NULL                  |                  0 |          14 |
-| WX333    |    4800 | 2023-03-10            |                  2 |           8 |
-| WX336    |    4800 | 2023-04-20            |                  2 |           8 |
-| WX338    |    4900 | 2023-02-15            |                  3 |           8 |
-| WX340    |    4800 | 2023-05-30            |                  2 |           8 |
-| WX342    |    4500 | 2023-03-20            |                  1 |           8 |
-| WX343    |    4800 | NULL                  |                  0 |           8 |
-| WX345    |    4700 | 2023-04-28            |                  2 |          10 |
-| WX349    |    4900 | 2023-05-18            |                  2 |          10 |
-| WX351    |    4800 | 2023-04-02            |                  3 |          12 |
-| WX354    |    4800 | 2023-03-25            |                  2 |          12 |
-| WX359    |    4900 | 2023-04-05            |                  1 |          20 |
-+----------+---------+-----------------------+--------------------+-------------+
+
+Query :
+select c.*,sum(r.distance) as distance,count(r1.train_no) as trips from coaches c join made_of m join routes r join (select train_no,route_id from scheduled_for where date < '2023-09-30') r1 where c.coach_id = m.coach_id and m.train_no = r1.train_no and r1.route_id = r.route_id group by c.coach_id having distance between 4000 and 4999;
+
+Output : 
++----------+---------+-----------------------+--------------------+----------+-------+
+| coach_id | mileage | last_maintenance_date | total_maintenances | distance | trips |
++----------+---------+-----------------------+--------------------+----------+-------+
+| WX340    |    4800 | 2023-05-30            |                  2 |     4704 |     8 |
+| WX341    |    5100 | NULL                  |                  0 |     4704 |     8 |
+| WX342    |    4500 | 2023-03-20            |                  1 |     4704 |     8 |
+| WX343    |    4800 | NULL                  |                  0 |     4704 |     8 |
+| WX326    |    5200 | NULL                  |                  0 |     4944 |    12 |
+| WX327    |    5000 | 2023-05-02            |                  2 |     4944 |    12 |
+| WX328    |    4700 | 2023-04-15            |                  1 |     4944 |    12 |
+| WX329    |    4800 | NULL                  |                  0 |     4944 |    12 |
+| WX330    |    5100 | 2023-06-10            |                  3 |     4944 |    12 |
++----------+---------+-----------------------+--------------------+----------+-------+
 
 3. List all agents, in descending order of percentage of confirmed booking each trip in the month of October this year. Include agent and route information in your result.
--- select a.agent_id,count(t.ticket_no) as total_confirmed_tickets from agents a join tickets t where t.agent_id = a.agent_id and t.agent_id is not null and t.status='confirmed' and month(t.date)=10 group by agent_id order by total_confirmed_tickets desc;
-+----------+-------------------------+
-| agent_id | total_confirmed_tickets |
-+----------+-------------------------+
-| C143     |                       7 |
-| C118     |                       4 |
-+----------+-------------------------+
+
+Query :
+select a.*,r.*,r4.perc_of_cnf_tickets_sold from agents a join routes r join (select r3.agent_id,r3.route_id,((r3.confirmed_tickets_sold/r3.total_tickets_sold)*100) as perc_of_cnf_tickets_sold from (select * from (select a.agent_id,r.route_id,count(tk.ticket_no) as confirmed_tickets_sold from agents a join tickets tk on a.agent_id=tk.agent_id join travels_on tv on tk.train_no=tv.train_no join routes r on tv.route_id=r.route_id and tk.status='confirmed' and month(tk.date)=10 and year(tk.date)=2023 group by a.agent_id, r.route_id) r1 natural join (select r.route_id,count(tk.ticket_no) as total_tickets_sold from routes r join travels_on tv on r.route_id=tv.route_id join tickets tk on tv.train_no=tk.train_no join agents a on tk.agent_id=a.agent_id and tk.status='confirmed' and month(tk.date)=10 and year(tk.date)=2023 group by r.route_id) r2) r3 ) r4 where r4.agent_id=a.agent_id and r4.route_id=r.route_id order by r4.perc_of_cnf_tickets_sold desc;
+
+Output : 
++----------+--------------+------+--------+------------+----------+----------------------------+----------+--------------------------+
+| agent_id | name         | age  | gender | phone      | route_id | name                       | distance | perc_of_cnf_tickets_sold |
++----------+--------------+------+--------+------------+----------+----------------------------+----------+--------------------------+
+| a_143    | Pranay Verma |   33 | Male   | 9876543210 | R007     | Lonavala-Ajmer             |     1062 |                 100.0000 |
+| a_143    | Pranay Verma |   33 | Male   | 9876543210 | R017     | Ajmer-Lonavala             |     1062 |                 100.0000 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R008     | Dharwad-Bengaluru          |      432 |                 100.0000 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R018     | Bengaluru-Dharwad          |      432 |                 100.0000 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R004     | Mumbai-Sainagar Shirdi     |      248 |                 100.0000 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R014     | Sainagar Shirdi-Mumbai     |      248 |                 100.0000 |
+| a_143    | Pranay Verma |   33 | Male   | 9876543210 | R001     | Mumbai Central-Gandhinagar |      548 |                  75.0000 |
+| a_143    | Pranay Verma |   33 | Male   | 9876543210 | R011     | Gandhinagar-Mumbai Central |      548 |                  75.0000 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R003     | Secunderabad-Visakhapatnam |      500 |                  66.6667 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R013     | Visakhapatnam-Secunderabad |      500 |                  66.6667 |
+| a_143    | Pranay Verma |   33 | Male   | 9876543210 | R010     | Mumbai-Goa                 |      588 |                  50.0000 |
+| a_143    | Pranay Verma |   33 | Male   | 9876543210 | R020     | Goa-Mumbai                 |      588 |                  50.0000 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R010     | Mumbai-Goa                 |      588 |                  50.0000 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R020     | Goa-Mumbai                 |      588 |                  50.0000 |
+| a_143    | Pranay Verma |   33 | Male   | 9876543210 | R003     | Secunderabad-Visakhapatnam |      500 |                  33.3333 |
+| a_143    | Pranay Verma |   33 | Male   | 9876543210 | R013     | Visakhapatnam-Secunderabad |      500 |                  33.3333 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R001     | Mumbai Central-Gandhinagar |      548 |                  25.0000 |
+| a_118    | Poonam Yadav |   27 | Female | 7654321098 | R011     | Gandhinagar-Mumbai Central |      548 |                  25.0000 |
++----------+--------------+------+--------+------------+----------+----------------------------+----------+--------------------------+
+
 
 4. Display the details of the routes where majority of bookings are not made by agents. 
--- select r.* from routes r join (select route_id,count(route_id) as ticket_count from tickets t where t.agent_id is null group by route_id order by ticket_count desc limit 1) r1 on r.route_id=r1.route_id;
-+----------+------------+----------+
-| route_id | name       | distance |
-+----------+------------+----------+
-| R010     | Mumbai-Goa |      588 |
-+----------+------------+----------+
+
+Query :
+select r.* from routes r natural join ((select r.route_id,count(tk.ticket_no) as bookings_by_customers from tickets tk join travels_on tv on tk.train_no=tv.train_no join routes r on tv.route_id=r.route_id and tk.agent_id is null group by r.route_id) r1 natural join (select r.route_id,count(tk.ticket_no) as total_bookings from tickets tk join travels_on tv on tk.train_no=tv.train_no join routes r on tv.route_id=r.route_id group by r.route_id) r2) where (r1.bookings_by_customers > ((r2.total_bookings*50)/100) );
+
+Output : 
++----------+------------------------+----------+
+| route_id | name                   | distance |
++----------+------------------------+----------+
+| R004     | Mumbai-Sainagar Shirdi |      248 |
+| R005     | Mumbai-Solapur         |      400 |
+| R010     | Mumbai-Goa             |      588 |
+| R014     | Sainagar Shirdi-Mumbai |      248 |
+| R015     | Solapur-Mumbai         |      400 |
+| R020     | Goa-Mumbai             |      588 |
++----------+------------------------+----------+
 
 5. Display the details of the agents who have made maximum commission in the Month of September. 
--- select agent_id, total_earning from (select t.agent_id, sum(t.price) as total_earning from tickets t where t.agent_id is not null and month(t.date) = 9 group by agent_id) as agent_earnings where total_earning > (select avg(total_earning) from (select agent_id, sum(price) as total_earning from tickets where agent_id is not null and month(date) = 9 group by agent_id) as avg_earnings);
-+----------+---------------+
-| agent_id | total_earning |
-+----------+---------------+
-| C101     |          3900 |
-+----------+---------------+
+
+Query:
+select a.* from agents a natural join (select t.agent_id, sum(t.price) as total_earning from tickets t where t.agent_id is not null and month(t.date) = 9 group by agent_id) as agent_earnings where total_earning > (select avg(total_earning) from (select agent_id, sum(price) as total_earning from tickets where agent_id is not null and month(date) = 9 group by agent_id) as avg_earnings);
+
+Output:
++----------+--------------+------+--------+------------+
+| agent_id | name         | age  | gender | phone      |
++----------+--------------+------+--------+------------+
+| a_101    | Sahil Sharma |   20 | Male   | 7890123456 |
++----------+--------------+------+--------+------------+
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
