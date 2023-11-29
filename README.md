@@ -128,6 +128,7 @@ Output :
 | WX330    |    5100 | 2023-06-10            |                  3 |     4944 |    12 |
 +----------+---------+-----------------------+--------------------+----------+-------+
 
+
 3. List all agents, in descending order of percentage of confirmed booking each trip in the month of October this year. Include agent and route information in your result.
 
 Query :
@@ -175,6 +176,7 @@ Output :
 | R020     | Goa-Mumbai             |      588 |
 +----------+------------------------+----------+
 
+
 5. Display the details of the agents who have made maximum commission in the Month of September. 
 
 Query:
@@ -186,6 +188,7 @@ Output:
 +----------+--------------+------+--------+------------+
 | a_101    | Sahil Sharma |   20 | Male   | 7890123456 |
 +----------+--------------+------+--------+------------+
+
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
