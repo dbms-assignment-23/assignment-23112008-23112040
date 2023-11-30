@@ -189,6 +189,15 @@ Output:
 | a_101    | Sahil Sharma |   20 | Male   | 7890123456 |
 +----------+--------------+------+--------+------------+
 
+SET A Query 1.
+select * from trains tn join (select r1.*,r2.mnt_coaches from (select r1.train_no,count(m.coach_id) total_coaches from trains t join (select tn.* from trains tn join travels_on tv on tn.train_no=tv.train_no join routes r on tv.route_id=r.route_id and r.route_id in (select route_id from routes where name in  ('Goa-Mumbai','Ajmer-Lonavala'))) r1 on t.train_no=r1.train_no join made_of m on t.train_no=m.train_no join coaches c on m.coach_id=c.coach_id group by r1.train_no) r1 join (select r1.train_no,count(m.coach_id) mnt_coaches from trains t join (select tn.* from trains tn join travels_on tv on tn.train_no=tv.train_no join routes r on tv.route_id=r.route_id and r.route_id in (select route_id from routes where name in  ('Goa-Mumbai','Ajmer-Lonavala'))) r1 on t.train_no=r1.train_no join made_of m on t.train_no=m.train_no join coaches c on m.coach_id=c.coach_id where (c.last_maintenance_date < date_add(curdate(),interval 6 month)) group by r1.train_no) r2 on r1.train_no=r2.train_no where r1.total_coaches/2 < r2.mnt_coaches) f_res where tn.train_no=f_res.train_no;
+
++----------+-------------------------+----------+---------------+-------------+
+| train_no | name                    | train_no | total_coaches | mnt_coaches |
++----------+-------------------------+----------+---------------+-------------+
+|      110 | Indore-Bhopal Superfast |      110 |             6 |           4 |
+|      101 | Mumbai Express          |      101 |             5 |           4 |
++----------+-------------------------+----------+---------------+-------------+
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
